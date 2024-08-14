@@ -1,14 +1,12 @@
 /*
-* OpenAI example using form to send data
-* Form: simple HTML form with text input
+* OpenAI example using voice to send data
+* Form: simple HTML form with text input and voice recognition
 * OpenAI: https://platform.openai.com/docs
 * Response: JSON
 */
 const express = require('express');
 const { OpenAI } = require("openai");
 const app = express();
-const bodyParser = require('body-parser');
-app.use(bodyParser.urlencoded({ extended: true }));
 const dotenv = require('dotenv');
 dotenv.config();
 const port = 3000;
@@ -23,8 +21,8 @@ const openai = new OpenAI({
 });
 
 // Route pour recevoir les données
-app.post('/getAnswerFromOpenAI', async (req, res, next) => {
-    console.log('/getAnswerFromOpenAI', req.body); // Affiche les données reçues dans la console du serveur
+app.post('/speechToTextEndpoint', async (req, res) => {
+    console.log('/speechToTextEndpoint', req.body); // Affiche les données reçues dans la console du serveur
     const response = await getAnswerFromOpenAI(req.body.transcriptionText);
     res.json({ status: 'Success', receivedText: req.body.transcriptionText, openAiResponse: response });
 });
