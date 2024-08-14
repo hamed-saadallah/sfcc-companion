@@ -1,6 +1,5 @@
 const express = require('express');
-const axios = require('axios');
-const openai = require('openai');
+const { OpenAI } = require("openai");
 const app = express();
 const dotenv = require('dotenv');
 dotenv.config();
@@ -11,8 +10,9 @@ app.use(express.json());
 
 // Servir les fichiers statiques
 app.use(express.static('public'));
-
-openai.apiKey = process.env.OPENAI_API_KEY;
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 // Route pour recevoir les données
 app.post('/speechToTextEndpoint', async (req, res) => {
@@ -25,24 +25,16 @@ const getAnswerFromOpenAI = async (message) => {
     try {
         const prompt = `Answer the following question: ${message}`;
         console.log(prompt);
-        const result = await axios.post(
-            'https://api.openai.com/v1/completions',
-            {
-                prompt: prompt,
-                max_tokens: 50,
-                model: "text-davinci-003"
-            },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${openai.apiKey}`,
-                },
-            }
-        ).then(function (response) {
-            console.log(response.data);
+        const result = await openai.chat.completions.create({
+          model: "gpt-3.5-turbo",
+          messages: [
+            { role: "system", content: "You are a helpful assistant." },
+            { role: "user", content: prompt },
+          ],
+          max_tokens: 600,  // Limite des tokens pour la réponse
         });
-        console.log(result);
-        return result.data.choices[0].text.trim();
+        console.log(JSON.stringify(result));
+        return result.choices[0].message.content;
     } catch (error) {
         console.error('Error fetching answer from OpenAI:', error);
         return 'An error occurred while fetching the answer. Please try again.';
